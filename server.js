@@ -240,9 +240,9 @@ app.get('/Agreement/getPayement', function(request, response){
 
 if (process.env.NODE_ENV === 'production') {
     // Serve any static files
-    app.use(express.static(path.join(__dirname, 'money360/build')));// Handle React routing, return all requests to React app
+    app.use(express.static(path.join(__dirname, 'HirePurchase/public')));// Handle React routing, return all requests to React app
     app.get('*', function(req, res) {
-      res.sendFile(path.join(__dirname, 'money360/build', 'index.html'));
+      res.sendFile(path.join(__dirname, 'HirePurchase/public', 'index.html'));
     });
   }
 
