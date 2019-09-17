@@ -5,8 +5,7 @@
   "main": "server.js",
   "scripts": {
     "client-install": "npm install --prefix client",
-    "start": "forever start --minUptime 1000 --spinSleepTime 1000 server.js",
-    "stop":  "forever stop server.js",
+    "start": "nohup node server.js",
     "client": "npm start --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "heroku-prebuild": "export NPM_CONFIG_PRODUCTION=false; export NODE_ENV=; NPM_CONFIG_PRODUCTION=false NODE_ENV=development npm install --only=dev --dev",
@@ -25,6 +24,7 @@
     "fs": "0.0.1-security",
     "morgan": "^1.9.1",
     "nodemon": "^1.19.2",
+    "nohup": "^0.1.0",
     "path": "^0.12.7",
     "pg": "^7.12.1"
   }
