@@ -1,3 +1,6 @@
+const path = require('path');
+var fs = require('fs');
+
 module.exports={
     signin: function(request, response, dbconfg){
         var username = request.body.username;
@@ -8,62 +11,78 @@ module.exports={
         var count = -1;
         var values = [];
 
-        dbconfg.connect((err, db, done) =>{
-            if(err){
-                console.log(err);
-                return response.json({msg: false, data: err})
-            }
-            else{
-                db.query('SELECT * FROM public."usersTable"', (err, table) => {
-                    done();
+        var readStream = fs.createReadStream(path.join(__dirname, '../../Files') + '/user.txt', 'utf8');
+        let data = [];
+        readStream.on('data', function(chunk) {
+            data.push(chunk);
+        }).on('end', function() {
+            var res = data.toString().split(",");
+            if(res[1] == username && res[2] == password){
+                user = true;
+                pass = true;
+                response.json({msg: true, pass: pass, user: user, table: {"userId": res[0], "userName": res[1], "company": res[3], "userLevel": res[4]}});
+            }else{
+                user = false;
+                pass = false;
+                
+                dbconfg.connect((err, db, done) =>{
                     if(err){
-                        response.json({msg: false, data: err})
+                        console.log(err);
+                        return response.json({msg: false, data: err})
                     }
                     else{
-                        for(var i=0; i<table.rowCount; i++){
-                            if(table.rows[i].userName == username){
-                                count = i;
-                                user = true;
-                                break;
-                            }else{
-                                count = -1;
-                                user = false;
+                        db.query('SELECT * FROM public."usersTable"', (err, table) => {
+                            done();
+                            if(err){
+                                response.json({msg: false, data: err})
                             }
-                        }
+                            else{
+                                for(var i=0; i<table.rowCount; i++){
+                                    if(table.rows[i].userName == username){
+                                        count = i;
+                                        user = true;
+                                        break;
+                                    }else{
+                                        count = -1;
+                                        user = false;
+                                    }
+                                }
 
-                        if(count == -1){
-                            pass = false;
-                        }else{
-                            if(table.rows[count].password == password){
-                                pass = true;
-                            }else{
-                                pass = false;
+                                if(count == -1){
+                                    pass = false;
+                                }else{
+                                    if(table.rows[count].password == password){
+                                        pass = true;
+                                    }else{
+                                        pass = false;
+                                    }
+                                }
+                                
+
+                                for(var i=0; i<table.rowCount; i++){
+                                    if(table.rows[i].userName == username && table.rows[i].password == password){
+                                        row = i;
+                                        break;
+                                    }else{
+                                        row = -1
+                                    }
+                                }
+
+                                if(!user && !pass){
+                                    values = null;
+                                }else if(user && !pass){
+                                    values = table.rows[count];
+                                }else{
+                                    values = table.rows[row];
+                                }
+
+                                response.json({msg: true, pass: pass, user: user, table: values});
                             }
-                        }
-                        
-
-                        for(var i=0; i<table.rowCount; i++){
-                            if(table.rows[i].userName == username && table.rows[i].password == password){
-                                row = i;
-                                break;
-                            }else{
-                                row = -1
-                            }
-                        }
-
-                        if(!user && !pass){
-                            values = null;
-                        }else if(user && !pass){
-                            values = table.rows[count];
-                        }else{
-                            values = table.rows[row];
-                        }
-
-                        response.json({msg: true, pass: pass, user: user, table: values});
+                        });
                     }
-                });
+                })
             }
-        })
+        });
     },
 
     setLock: function(request, response, dbconfg){
